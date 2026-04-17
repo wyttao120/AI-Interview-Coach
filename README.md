@@ -79,24 +79,33 @@ python run_interview.py
 
 ---
 
+
 ## 📺 视觉预览 (Visual Showcase)
-```bash
-1. SaaS 化量化看板
-集成指标卡片与能力雷达图，面试表现一目了然。
 
+### 1. 极简交互入口
+> 用户可自定义配置 API 接口、模型大小，并支持视频与 JD 文档的同步上传。
 <p align="center">
-<img src="assets/dashboard_metrics.png" width="900" alt="看板预览">
+  <img src="assets/app_home.png" width="900" alt="应用首页">
 </p>
-```
 
-```bash
-2. 长期成长趋势
-自动调取 Supabase 历史数据，追踪 WPM 语速波动与得分进化。
-
+### 2. 智能化分析流程 (Agent Workflow)
+> 自动化执行 RAG 检索、历史表现提取、WhisperX 音频对齐及 AI 深度分析。
 <p align="center">
-<img src="assets/growth_curve.png" width="900" alt="成长曲线">
+  <img src="assets/analysis_workflow.png" width="800" alt="处理流程">
 </p>
-```
+
+### 3. 多维度结果产出 (Analysis & Insights)
+| 📊 量化表现看板 | 🤖 AI 教练深度报告 |
+| :---: | :---: |
+| <img src="assets/metrics_dashboard.png" width="450"> | <img src="assets/ai_report.png" width="450"> |
+| **实时指标**：语速波动曲线与能力雷达图 | **深度洞察**：技术诊断与跨会话成长对比 |
+
+### 4. 进化史追踪
+> 基于 Supabase 云端存储，自动分析并绘制跨越数周的技术得分走势与语速平稳度。
+<p align="center">
+  <img src="assets/growth_history.png" width="900" alt="成长轨迹">
+</p>
+
 
 ## 🛡️ 安全与隐私
 * **密钥安全**：项目通过 .gitignore 严格过滤 .env 文件，确保 API 凭据不泄露。
