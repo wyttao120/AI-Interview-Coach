@@ -14,7 +14,6 @@ from utils.metrics import calculate_wpm, generate_radar_chart
 from utils.rag_engine import process_jd_to_context
 from utils.db_manager import save_interview_result, get_last_interview, get_all_history, init_db
 
-load_dotenv()
 cc = OpenCC('t2s')
 
 # --- 1. 初始化阶段 ---
