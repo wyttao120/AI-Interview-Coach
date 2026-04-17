@@ -17,6 +17,7 @@ whisperX-main/
 *.json
 *.txt
 !requirements.txt
+!packages.txt
 
 # 忽略本地工具
 ffmpeg.exe
