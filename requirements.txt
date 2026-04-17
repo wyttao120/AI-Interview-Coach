@@ -1,0 +1,23 @@
+# --- 核心框架 ---
+streamlit
+openai
+supabase
+python-dotenv
+pandas
+plotly
+
+# --- 语音与文本处理 ---
+# 注意：whisperx 建议使用镜像或直接从 git 安装以确保时间戳对齐功能
+whisperx @ git+https://github.com/m-bain/whisperX.git
+opencc-python-reimplemented
+
+# --- RAG 针对性增强 (JD 处理) ---
+langchain>=0.3.0
+langchain-community
+langchain-huggingface
+pypdf
+sentence-transformers
+
+# --- 科学计算 (保持兼容性) ---
+numpy<2.0.0
+torch

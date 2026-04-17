@@ -1,0 +1,30 @@
+# 忽略虚拟环境
+venv/
+.env
+实习/
+# 忽略临时文件
+__pycache__/
+.ipynb_checkpoints/
+whisperX-main/
+
+# 忽略音视频大文件
+*.mp4
+*.mkv
+*.wav
+*.mp3
+
+# 忽略提取的结果
+*.json
+*.txt
+!requirements.txt
+
+# 忽略本地工具
+ffmpeg.exe
+
+.env
+venv/
+__pycache__/
+*.mp4
+interview_result.txt
+interview_report.md
+.DS_Store

@@ -1,0 +1,9 @@
+# 忽略所有 HTML 文件的语言统计
+*.html linguist-detectable=false
+
+# 如果你还有一些 CSS 或 JS 只是为了 Streamlit 运行，也可以一起忽略
+*.css linguist-detectable=false
+*.js linguist-detectable=false
+
+# 确保核心 Python 文件被识别
+*.py linguist-detectable=true
