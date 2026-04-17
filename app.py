@@ -28,12 +28,16 @@ if 'report' not in st.session_state: st.session_state.report = None
 if 'transcript' not in st.session_state: st.session_state.transcript = None
 if 'df_wpm' not in st.session_state: st.session_state.df_wpm = None
 if 'scores' not in st.session_state: st.session_state.scores = None
+if 'jd_context' not in st.session_state: st.session_state.jd_context = "通用面试评价标准"
+if 'messages' not in st.session_state:
+    st.session_state.messages = [{"role": "assistant", "content": "我是你的 AI 面试导师，你可以针对本次面试复盘向我提问，或让我帮你练习特定环节。"}]
 
 # 辅助函数：解析 AI 报告中的 JSON 分数
 def extract_scores(text):
     try:
         match = re.search(r'Scores:\s*(\{.*?\})', text, re.DOTALL)
         if match: return json.loads(match.group(1))
+        scores_dict = json.loads(score_json)  # 转为 Python 字典 {'技术深度': 8, ...}
     except Exception as e:
         print(f"解析分数失败: {e}")
     return None
@@ -47,14 +51,14 @@ with st.sidebar:
 
     st.divider()
     st.header("🎯 岗位针对性增强")
-    jd_file = st.file_uploader("上传目标岗位 JD (PDF/TXT)", type=['pdf', 'txt'])
+    jd_file = st.file_uploader("上传目标岗位 JD (图片/PDF/TXT)", type=['pdf', 'txt', 'png', 'jpg', 'jpeg'])
 
 # --- 3. 主界面布局 ---
 st.title("🎤 AI 面试复盘助手")
 uploaded_file = st.file_uploader("选择面试视频文件", type=["mp4", "mkv", "mov", "avi"])
 
 # 定义 4 个标签页
-tab_video, tab_metrics, tab_report, tab_history = st.tabs(["🎥 视频处理", "📊 量化分析看板", "🧠 AI 深度诊断", "📈 成长轨迹"])
+tab_video, tab_metrics, tab_report, tab_history, tab_assistant = st.tabs(["🎥 视频处理", "📊 量化分析看板", "🧠 AI 深度诊断", "📈 成长轨迹", "💬 AI 助手"])
 
 video_path = "temp_video.mp4"
 
@@ -77,11 +81,20 @@ if st.button("🚀 开始一键复盘", type="primary"):
             # A. 处理 JD (RAG 环节)
             jd_context = "通用面试评价标准"
             if jd_file:
-                st.write("正在检索岗位核心要求...")
+                st.write(f"🔍 正在解析上传的 JD 文件: {jd_file.name}...")
                 temp_jd = f"temp_{jd_file.name}"
-                with open(temp_jd, "wb") as f: f.write(jd_file.getvalue())
+                with open(temp_jd, "wb") as f: 
+                    f.write(jd_file.getvalue())
+                
+                # 调用解析函数
                 jd_context = process_jd_to_context(temp_jd)
-                os.remove(temp_jd)
+                os.remove(temp_jd) # 清理临时文件
+
+                # --- 新增诊断反馈逻辑 ---
+                if not jd_context or jd_context == "通用面试评价标准":
+                    st.warning("⚠️ 岗位 JD 解析结果似乎为空。如果上传的是图片，请确认：\n1. 图片文字是否清晰；\n2. 您的接入点 ID 是否支持 Vision (视觉) 模型。")
+                else:
+                    st.info(f"✅ JD 解析成功！识别到约 {len(jd_context)} 个字符。")
 
             # B. 获取历史记录用于对比 (SaaS 核心逻辑)
             st.write("正在提取历史表现以进行对比分析...")
@@ -119,7 +132,7 @@ if st.button("🚀 开始一键复盘", type="primary"):
             任务：
             1. 诊断技术点与逻辑。
             2. 给出“成长对比”：对比历史表现（若有），分析是否有进步。
-            3. 结尾包含 JSON 评分 Scores: {{"技术深度": 8, "逻辑表达": 7, "自信度": 9, "沟通技巧": 8, "岗位匹配度": 7}}
+            3. 结尾包含 JSON 评分 Scores: {{"技术深度": 分数, "逻辑表达":  分数, "自信度":  分数, "沟通技巧":  分数, "岗位匹配度":  分数}}
             
             [岗位要求]: {jd_context}
             [面试文本]: {full_transcript}
@@ -133,6 +146,7 @@ if st.button("🚀 开始一键复盘", type="primary"):
             st.session_state.scores = extract_scores(coach_feedback)
             st.session_state.report = coach_feedback
             st.session_state.transcript = full_transcript
+            st.session_state.jd_context = jd_context
 
             # G. ✨ 同步到数据库
             try:
@@ -196,3 +210,45 @@ with tab_history:
             score_list.append(s_dict)
         
         st.line_chart(pd.DataFrame(score_list).set_index('日期'))
+
+# ✨ 新增：在此处插入第二张图的代码 (建议补全 AI 调用逻辑)
+with tab_assistant:
+    st.write("### 💬 AI 面试导师")
+    # 1. 展示对话历史
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    # 2. 用户提问逻辑
+    if user_query := st.chat_input("针对复盘结果向我提问..."):
+        # 将用户消息存入 Session State 并展示
+        st.session_state.messages.append({"role": "user", "content": user_query})
+        with st.chat_message("user"):
+            st.markdown(user_query)
+
+        # 3. 调用 AI 助手（带上下文）
+        with st.chat_message("assistant"):
+            if st.session_state.report:
+                with st.spinner("思考中..."):
+                    # 构造包含复盘背景的 Prompt
+                    api_messages = [
+                    {
+        "role": "system", 
+        "content": f"你是一个面试导师。岗位要求：\n{st.session_state.get('jd_context', '通用标准')}\n复盘报告：\n{st.session_state.report}"
+    }
+                ]
+                # 加上之前的聊天记录（注意：跳过第一条欢迎语以节省 Token）
+                api_messages.extend(st.session_state.messages[1:])
+                
+                client = openai.OpenAI(api_key=api_key, base_url="https://ark.cn-beijing.volces.com/api/v3")
+                res = client.chat.completions.create(
+                    model=endpoint_id,
+                    messages=api_messages # 👈 传入完整的对话链
+                )
+                
+                full_res = res.choices[0].message.content
+                st.markdown(full_res)
+                # 3. 把 AI 的回答也存入记忆
+                st.session_state.messages.append({"role": "assistant", "content": full_res})
+            else:
+                st.info("💡 请先在‘视频处理’标签页完成一次面试复盘，以便我结合你的具体表现提供指导。")

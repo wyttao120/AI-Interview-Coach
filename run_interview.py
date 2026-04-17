@@ -55,7 +55,8 @@ def ai_coach_analyze(text, jd_context="通用标准", last_record=None):
     任务：
     1. 诊断技术点与逻辑。
     2. 给出“成长对比”：对比历史表现，分析其语速稳定性、技术深度等维度的变化。
-    3. 结尾包含 JSON 评分 Scores: {{"技术深度": 8, "逻辑表达": 7, "自信度": 9, "沟通技巧": 8, "岗位匹配度": 7}}
+    3. 严格按照以下 JSON 格式给出 0-10 分的评分：
+   Scores: {{"技术深度": 分数, "逻辑表达": 分数, "自信度": 分数, "沟通技巧": 分数, "岗位匹配度": 分数}}
     
     [岗位要求]: {jd_context}
     [面试文本]: {text}
@@ -86,8 +87,17 @@ last_record = get_last_interview(current_user_id)
 
 # --- 5. 指标计算与 AI 诊断 ---
 # A. 处理 JD
-jd_path = "target_jd.txt" 
-jd_context = process_jd_to_context(jd_path) if os.path.exists(jd_path) else "通用面试标准"
+jd_files = ["target_jd.txt", "target_jd.png", "target_jd.jpg", "target_jd.pdf"]
+# 寻找目录下第一个存在的文件
+jd_path = next((f for f in jd_files if os.path.exists(f)), None)
+if jd_path:
+    print(f"检测到 JD 文件: {jd_path}, 正在解析...")
+    jd_context = process_jd_to_context(jd_path)
+    if not jd_context or jd_context == "通用面试标准":
+        print("⚠️ 警告：JD 解析结果为空，请检查图片是否清晰或模型是否支持 Vision。")
+else:
+    print("ℹ️ 未检测到 target_jd 文件，将使用通用面试标准。")
+print(f"🔍 调试：读取到的 JD 内容长度为 {len(jd_context)}，内容摘要：{jd_context[:50]}...")
 
 # B. 计算语速 WPM
 df_wpm = calculate_wpm(result["segments"])
@@ -97,6 +107,8 @@ avg_wpm = float(df_wpm['wpm'].mean()) if not df_wpm.empty else 0
 full_transcript = "".join([f"[{s['start']:.2f}s] {cc.convert(s['text'])}\n" for s in result["segments"]])
 
 # D. AI 对比分析
+# 获取该用户在 Supabase 的最后一次复盘数据
+last_record = get_last_interview(current_user_id)
 coach_feedback = ai_coach_analyze(full_transcript, jd_context, last_record)
 
 # E. 解析评分
@@ -129,3 +141,51 @@ with open(report_file, "w", encoding="utf-8") as f:
     f.write(f"\n---\n## 📝 详细转录\n```text\n{full_transcript}\n```")
 
 print(f"\n--- ✅ 任务完成！报告已生成：{report_file} ---")
+
+# --- 8. ✨ 新增：交互式命令行 AI 导师 ---
+chat_history = [
+    {
+        "role": "system", 
+        "content": f"""你是一个面试导师。请结合以下背景信息回答用户：
+        
+        【目标岗位要求 (JD)】：
+        {jd_context}
+        
+        【本次面试复盘报告】：
+        {coach_feedback}
+        """
+    }
+]
+
+print("\n" + "="*30)
+print("💬 进入 AI 导师互动模式 (输入 'q' 退出)")
+print("="*30)
+
+while True:
+    user_input = input("\n👤 你: ")
+    if user_input.lower() in ['q', 'quit', 'exit']:
+        break
+        
+    # --- 步骤 2：将用户输入存入对话历史 ---
+    chat_history.append({"role": "user", "content": user_input})
+    
+    client = openai.OpenAI(api_key=VOLC_API_KEY, base_url="https://ark.cn-beijing.volces.com/api/v3")
+    try:
+        # --- 步骤 3：调用 API 时，使用 messages=chat_history ---
+        # 这样 AI 就能看到之前所有的对话记录，而不只是当前这一个问题
+        res = client.chat.completions.create(
+            model=DOUBAO_ENDPOINT_ID,
+            messages=chat_history 
+        )
+        
+        answer = res.choices[0].message.content
+        print(f"\n🤖 AI 导师: {answer}")
+        
+        # --- 步骤 4：获取 AI 回复后，同样存入列表 ---
+        # 这样下次你提问时，AI 才知道它刚才对你说了什么
+        chat_history.append({"role": "assistant", "content": answer})
+        
+    except Exception as e:
+        print(f"❌ 对话出错: {e}")
+
+print("\n👋 祝你面试顺利，再见！")

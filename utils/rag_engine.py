@@ -1,13 +1,40 @@
 import os
+import base64
+import openai
+import io
 from langchain_community.document_loaders import TextLoader, PyPDFLoader
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from PIL import Image
 
 # 使用本地免费模型进行向量化（无需额外 API Key）
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 def process_jd_to_context(file_path):
+    ext = file_path.split('.')[-1].lower()
+    
+    if ext in ['png', 'jpg', 'jpeg']:
+        # 1. 将图片转为 Base64
+        with open(file_path, "rb") as image_file:
+            base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+        
+        # 2. 调用视觉大模型 (Vision LLM)
+        # 注意：这里需要你使用的接入点支持视觉模型，如 Doubao-Vision
+        client = openai.OpenAI(api_key=os.getenv("VOLC_API_KEY"), base_url="https://ark.cn-beijing.volces.com/api/v3")
+        response = client.chat.completions.create(
+            model=os.getenv("DOUBAO_ENDPOINT_ID"), # 替换为你的视觉模型接入点
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "请提取这张截图中的所有岗位职责和要求，整理成纯文本。"},
+                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
+                    ],
+                }
+            ],
+        )
+        return response.choices[0].message.content
     """
     读取 JD 文件，提取最核心的 3 条岗位要求作为背景
     """

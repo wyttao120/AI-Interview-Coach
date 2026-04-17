@@ -24,6 +24,7 @@
 * **岗位匹配**：分析回答与 JD 要求的契合度。
 * **📊 可视化仪表盘**：利用 **Plotly** 绘制能力画像雷达图，直观展现优劣势。
 * **🖥️ 极简 GUI 交互**：基于 `Streamlit` 构建，支持视频拖拽、报告一键导出。
+* **💬 智能面试导师 (AI Chat Mentor)**：支持针对面试表现进行实时追问，提供个性化的表达优化建议与模拟追问练习。
 
 ---
 
@@ -102,7 +103,13 @@ python run_interview.py
 | <img src="assets/metrics_dashboard.png" width="450"> | <img src="assets/ai_report.png" width="450"> |
 | **实时指标**：语速波动曲线与能力雷达图 | **深度洞察**：技术诊断与跨会话成长对比 |
 
-### 4. 进化史追踪
+### 4. 智能面试导师 (Interactive AI Mentor)
+> **深度对谈与针对性指导**：基于当前复盘报告与 Supabase 存储的历史数据，AI 导师能够识别“能力遗忘”或“表达断层”，并提供可落地的重构建议。
+<p align="center">
+  <img src="assets/ai_mentor_chat.png" width="900" alt="AI 导师对话">
+</p>
+
+### 5. 进化史追踪
 > 基于 Supabase 云端存储，自动分析并绘制跨越数周的技术得分走势与语速平稳度。
 <p align="center">
   <img src="assets/growth_history.png" width="900" alt="成长轨迹">
