@@ -52,6 +52,8 @@ cd AI-Interview-Coach
 
 # 安装核心依赖
 pip install -r requirements.txt
+
+登录 Supabase 后，打开 SQL Editor，将本项目根目录下的 init.sql 内容粘贴并运行。
 ```
 
 
