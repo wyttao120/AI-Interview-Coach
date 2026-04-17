@@ -1,121 +1,110 @@
-# 🎤 AI Interview Coach (AI 面试复盘助手)
+# 🛡️ AI Interview Coach (SaaS 版 AI 面试复盘助手)
 
 [![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![AI Engine](https://img.shields.io/badge/AI-Doubao--Seed--2.0-orange.svg)](https://www.volcengine.com/)
+[![Framework](https://img.shields.io/badge/Framework-Streamlit-red.svg)](https://streamlit.io/)
+[![Database](https://img.shields.io/badge/Database-Supabase-blueviolet.svg)](https://supabase.com/)
 
-> **将面试视频转化为深度的复盘报告，助你通过每一场技术大厂面试。**
+> **从录像到量化成长：基于 SaaS 架构的全栈 AI 面试复盘专家，助你攻克技术大厂。**
 
-本项目是一款基于 **WhisperX** 与 **豆包 AI (Doubao-Seed-2.0)** 开发的全自动化面试复盘工具。它能精准转录面试内容，并通过 AI 深度诊断你的表达逻辑、技术覆盖面及沟通习惯。
+本项目是一款集成了 **WhisperX 高精度转录**、**RAG 岗位针对性诊断**以及 **Supabase 云端历史追踪** 的全自动化面试复盘工具。它不仅能诊断单次面试，更能通过长期记忆系统追踪你的成长曲线。
 
 ---
 
 ## ✨ 核心特性
 
-* **⚡ 高精度转录**：集成 `WhisperX` 框架，提供比标准 Whisper 更准的时间戳对齐。
-* **🇨🇳 原生简体中文**：内置 `OpenCC` 转换引擎，消除 AI 模型常见的简繁混杂问题。
-* **🤖 豆包 AI 教练**：针对转录内容进行深度分析，自动生成复盘总结：
-* **技术关键词提取**：自动识别面试中涉及的核心技术点。
-* **表达逻辑诊断**：分析回答是否条理清晰、简洁有力。
-* **无效语气词统计**：精准识别“那个、然后、额”等口头禅。
-* **针对性改进建议**：提供面试官视角的专业反馈。
-* **📂 结构化报告**：一键生成精美的 `Markdown` 格式报告，方便查阅与归档。
-* **🛡️ 安全隐私**：通过 `.env` 环境变量管理 API 密钥，确保本地凭证不外泄。
-* **🖥️ 极简 GUI**：支持 `Streamlit` 网页交互，拖拽即可使用。
-
----
-
-## 🚀 快速开始
-
-1. **克隆仓库**: `git clone https://github.com/wyttao120/AI-Interview-Coach.git`
-2. **安装依赖**: `pip install -r requirements.txt`
-3. **配置环境**: 将 `.env.example` 改名为 `.env` 并填入你的 Ark API Key。
-4. **启动应用**: `streamlit run app.py`
+* **⚡ 高精度语音对齐**：集成 `WhisperX`，实现字级别的精准时间戳标注与 ASR 转录。
+* **🎯 岗位针对性增强 (RAG)**：支持上传目标岗位 JD，通过 **LangChain** 检索增强生成技术，实现“一岗一策”的精准诊断。
+* **📈 长期成长轨迹 (Long-term Memory)**：
+* **数据持久化**：集成 **Supabase (PostgreSQL)**，面试记录云端同步。
+* **进化看板**：自动比对历次面试得分，生成语速平稳度、技术得分走势图。
+* **🤖 豆包 Pro 深度诊断**：基于火山引擎大模型，提供 5 维度量化评分：
+* **技术深度**：评估知识点覆盖的广度与深度。
+* **逻辑表达**：诊断回答是否有条理、是否简洁。
+* **岗位匹配**：分析回答与 JD 要求的契合度。
+* **📊 可视化仪表盘**：利用 **Plotly** 绘制能力画像雷达图，直观展现优劣势。
+* **🖥️ 极简 GUI 交互**：基于 `Streamlit` 构建，支持视频拖拽、报告一键导出。
 
 ---
 
 ## 🛠️ 技术栈
 
-| 组件 | 技术实现 |
+| 领域 | 技术实现 |
 | :--- | :--- |
-| **音频转录** | WhisperX (Tiny/Base) |
-| **繁简转换** | OpenCC (Traditional to Simplified) |
-| **AI 分析** | 豆包 Doubao-Seed-2.0-lite (火山引擎) |
-| **界面展示** | Streamlit |
-| **环境配置** | Python-Dotenv |
+| **音频转录** | WhisperX (Tiny/Base/Small) |
+| **大模型引擎** | 豆包 Doubao-Pro (OpenAI SDK 兼容) |
+| **知识检索 (RAG)** | LangChain + Sentence-Transformers |
+| **数据中心 (SaaS)** | Supabase (PostgreSQL) |
+| **数据可视化** | Plotly + Pandas |
+| **界面开发** | Streamlit + Custom CSS |
 
 ---
 
-## 🚀 快速上手
+## 🚀 快速开始
 
-### 1. 安装环境与依赖
-确保系统中已安装 **FFmpeg**，然后执行以下命令：
+### 1. 环境准备
+确保系统中已安装 **FFmpeg**，然后克隆并安装依赖：
 
 ```bash
 # 克隆仓库
-git clone https://github.com/wyttao120/video-interview-transcriber.git
-cd interview-coach
+git clone https://github.com/wyttao120/AI-Interview-Coach.git
+cd AI-Interview-Coach
 
 # 安装核心依赖
 pip install -r requirements.txt
-``` 
-
+```
 
 
 ### 2. 配置 API 密钥
-本项目使用环境变量管理敏感信息。请在项目根目录创建 `.env` 文件：
+在项目根目录创建 .env 文件，填入你的云端凭证：
 
-```bash
-# 填写以下内容
-VOLC_API_KEY=你的火山引擎API密钥
-DOUBAO_ENDPOINT_ID=你的豆包接入点ID (EP-ID)
-``` 
+```Bash
+# 火山引擎 (豆包 AI)
+VOLC_API_KEY=你的 API 密钥
+DOUBAO_ENDPOINT_ID=你的接入点 ID
 
----
-
-### 3. 运行程序
-你可以选择适合你的运行模式：
-
-```bash
-方式 A：专业命令行模式
-	
-	python run_interview.py
-
-方式 B：直观 GUI 模式
-
-	streamlit run app.py
+# Supabase (云端数据库)
+SUPABASE_URL=你的项目 URL
+SUPABASE_KEY=你的匿名密钥 (Anon Key)
 ```
 
+### 3. 运行程序
+```Bash
+# 启动网页版 (推荐：含可视化看板)
+streamlit run app.py
+
+# 启动命令行版 (快速调试)
+python run_interview.py
+```
+
+---
+
 ## 📺 视觉预览 (Visual Showcase)
+```bash
+1. SaaS 化量化看板
+集成指标卡片与能力雷达图，面试表现一目了然。
 
-### 1. 极简交互入口
-> **用户通过直观的 Streamlit 界面上传面试视频，支持 MP4、MKV、MOV 等主流格式。**
 <p align="center">
-  <img src="assets/app_home.png" width="900" alt="应用首页">
+<img src="assets/dashboard_metrics.png" width="900" alt="看板预览">
 </p>
+```
 
----
+```bash
+2. 长期成长趋势
+自动调取 Supabase 历史数据，追踪 WPM 语速波动与得分进化。
 
-### 2. 智能化处理流程 (Agent Workflow)
-> **Agent 自动提取音轨并调用 WhisperX 引擎进行高精度对齐，用户可实时预览转录状态。**
 <p align="center">
-  <img src="assets/app_processing.jpg" width="800" alt="处理界面">
+<img src="assets/growth_curve.png" width="900" alt="成长曲线">
 </p>
+```
 
----
+## 🛡️ 安全与隐私
+* **密钥安全**：项目通过 .gitignore 严格过滤 .env 文件，确保 API 凭据不泄露。
 
-### 3. 多维度结果产出 (Analysis & Insights)
-| 📝 原始转录文本 (带时间戳) | 🤖 AI 教练深度复盘报告 |
-| :---: | :---: |
-| <img src="assets/output_transcription.jpg" width="450"> | <img src="assets/output_analysis.jpg" width="450"> |
-| **底层实力**：精准捕捉每一秒对话 | **Agent 智能**：提供逻辑诊断与改进建议 |
-## 🛡️ 项目安全
-* **敏感信息保护**：项目已配置 .gitignore，自动忽略 .env 及所有临时视频文件，防止密钥及面试隐私泄露。
-
-* **本地处理**：语音识别在本地 CPU/GPU 完成，仅脱敏文本传输至 AI 接口。
+* **数据持久化**：采用 Supabase Row Level Security (RLS) 理念设计，确保面试数据的私密性。
 
 ## 🤝 贡献与支持
-欢迎提交 Issue 或 Pull Request 来完善本项目。如果你觉得这个工具有用，请给个 Star ⭐！
+欢迎提交 Issue 或 Pull Request。如果你觉得这个工具有用，请给个 Star ⭐！
 
 ## 📄 开源协议
 本项目采用 MIT License 许可。
