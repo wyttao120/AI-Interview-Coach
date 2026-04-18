@@ -1,23 +1,29 @@
-# --- 核心框架 ---
-streamlit
-openai
-supabase
-python-dotenv
-pandas
-plotly
+# --- 核心 UI 框架 ---
+streamlit>=1.30.0              # 驱动 app.py 的网页交互
+python-dotenv>=1.0.0           # 自动加载 .env 环境变量
 
-# --- 语音与文本处理 ---
-# 注意：whisperx 建议使用镜像或直接从 git 安装以确保时间戳对齐功能
-whisperx @ git+https://github.com/m-bain/whisperX.git
-opencc-python-reimplemented
+# --- 语音转录与 AI 引擎 ---
+whisperx                       # 处理语音识别与字级对齐
+ctranslate2==4.7.1             # WhisperX 的高效推理后端 
+openai>=1.0.0                  # 调用豆包 AI (火山引擎) API
+torch                          # WhisperX 模型运行的基础框架
 
-# --- RAG 针对性增强 (JD 处理) ---
-langchain>=0.3.0
-langchain-community
-langchain-huggingface
-pypdf
-sentence-transformers
+# --- 数据库与 SaaS 功能 ---
+supabase>=2.0.0                # 云端数据持久化存储与历史查询
 
-# --- 科学计算 (保持兼容性) ---
-numpy<2.0.0
-torch
+# --- 数据分析与可视化 ---
+pandas>=2.0.0                  # 处理语速数据与历史走势
+numpy==2.2.6                   # 基础数值计算 
+scipy==1.16.3                  # 科学计算支持 
+matplotlib==3.10.8             # 基础绘图库 
+plotly>=5.15.0                 # 生成动态量化雷达图
+
+# --- 图像处理与文字转换 ---
+opencv-python==4.12.0.88       # JD/简历图片预处理 
+pillow==12.0.0                 # 图像读取与转换 
+opencc-python-reimplemented    # 实现面试文本的简繁转换
+
+# --- 基础网络支持 ---
+requests==2.32.5               # 处理 API 请求 
+urllib3==2.6.3                 # 网络底层支持 
+certifi==2026.1.4              # SSL 证书验证

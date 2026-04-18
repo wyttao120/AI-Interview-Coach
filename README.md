@@ -86,13 +86,13 @@ python run_interview.py
 ## 📺 视觉预览 (Visual Showcase)
 
 ### 1. 极简交互入口
-> 用户可自定义配置 API 接口、模型大小，并支持视频与 JD 文档的同步上传。
+> 侧边栏支持火山引擎 API 配置、模型大小选择，并新增了 JD 与简历的同步上传入口，实现 RAG 深度诊断。
 <p align="center">
   <img src="assets/app_home.png" width="900" alt="应用首页">
 </p>
 
 ### 2. 智能化分析流程 (Agent Workflow)
-> 自动化执行 RAG 检索、历史表现提取、WhisperX 音频对齐及 AI 深度分析。
+> 自动化执行 JD/简历解析、历史档案调取、音频转录及 AI 报告生成，每一步均有实时状态反馈。
 <p align="center">
   <img src="assets/analysis_workflow.png" width="800" alt="处理流程">
 </p>
@@ -101,25 +101,25 @@ python run_interview.py
 | 📊 量化表现看板 | 🤖 AI 教练深度报告 |
 | :---: | :---: |
 | <img src="assets/metrics_dashboard.png" width="450"> | <img src="assets/ai_report.png" width="450"> |
-| **实时指标**：语速波动曲线与能力雷达图 | **深度洞察**：技术诊断与跨会话成长对比 |
+| **实时指标**：语速波动曲线与能力雷达图 | **深度洞察**：包含技术点与逻辑诊断、成长对比、以及核心的“简历 vs 表现”差异分析，并产出 5 维度量化评分。 |
 
 ### 4. 智能面试导师 (Interactive AI Mentor)
-> **深度对谈与针对性指导**：基于当前复盘报告与 Supabase 存储的历史数据，AI 导师能够识别“能力遗忘”或“表达断层”，并提供可落地的重构建议。
+> **深度对谈与针对性指导**：基于当前复盘报告与历史数据，AI 导师会指出面试发挥偏离等问题，并提供具体的改进方向。
 <p align="center">
   <img src="assets/ai_mentor_chat.png" width="900" alt="AI 导师对话">
 </p>
 
 ### 5. 进化史追踪
-> 基于 Supabase 云端存储，自动分析并绘制跨越数周的技术得分走势与语速平稳度。
+> 自动分析跨会话的技术得分走势与语速平稳度，可视化展示用户的面试进化过程。
 <p align="center">
   <img src="assets/growth_history.png" width="900" alt="成长轨迹">
 </p>
 
 
 ## 🛡️ 安全与隐私
-* **密钥安全**：项目通过 .gitignore 严格过滤 .env 文件，确保 API 凭据不泄露。
+* **密钥安全**：项目通过 .gitignore 严格过滤 .env 文件。
 
-* **数据持久化**：采用 Supabase Row Level Security (RLS) 理念设计，确保面试数据的私密性。
+* **数据持久化**：采用 Supabase 设计，确保面试数据的私密性与持久性。
 
 ## 🤝 贡献与支持
 欢迎提交 Issue 或 Pull Request。如果你觉得这个工具有用，请给个 Star ⭐！

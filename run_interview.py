@@ -4,6 +4,7 @@ import whisperx
 import openai
 import json
 import re
+import pandas as pd
 from opencc import OpenCC
 from dotenv import load_dotenv
 
@@ -11,7 +12,7 @@ from dotenv import load_dotenv
 from utils.metrics import calculate_wpm
 from utils.rag_engine import process_jd_to_context
 # 新增：云端数据库管理
-from utils.db_manager import save_interview_result, get_last_interview
+from utils.db_manager import save_interview_result, get_last_interview, get_user_profile, get_history_fragments
 
 # 加载环境变量
 load_dotenv()
@@ -32,34 +33,30 @@ compute_type = "int8"
 cc = OpenCC('t2s')
 
 # --- 2. 增强型 AI 分析函数 ---
-def ai_coach_analyze(text, jd_context="通用标准", last_record=None):
-    print("\n--- 正在呼叫 豆包 AI 进行 SaaS 级深度分析 ---")
+def ai_coach_analyze(text, jd_context="通用标准", cv_context="暂无简历", last_record=None):
+    print("\n--- 正在呼叫 豆包 AI 进行深度复盘分析 ---")
     
     # 构建对比背景
     comparison_context = ""
     if last_record:
         ls = last_record.get('scores', {})
-        comparison_context = f"""
-        【该用户历史表现回顾】：
-        - 上次平均语速：{last_record.get('avg_wpm')} WPM
-        - 上次评分：技术深度({ls.get('技术深度', '无')}), 逻辑表达({ls.get('逻辑表达', '无')})
-        请在分析时重点对比本次面试是否有进步。
-        """
+        comparison_context = f"\n【该用户历史表现】：上次平均语速 {last_record.get('avg_wpm')} WPM，技术评分 {ls.get('技术深度', 'N/A')}。"
 
     client = openai.OpenAI(api_key=VOLC_API_KEY, base_url="https://ark.cn-beijing.volces.com/api/v3")
     
     prompt = f"""
-    你是一个资深面试官。请结合[岗位要求]评估本次[面试文本]。
+    你是一个资深面试官。请结合[岗位要求]和[个人简历]评估本次[面试文本]。
     {comparison_context}
     
-    任务：
-    1. 诊断技术点与逻辑。
-    2. 给出“成长对比”：对比历史表现，分析其语速稳定性、技术深度等维度的变化。
-    3. 严格按照以下 JSON 格式给出 0-10 分的评分：
-   Scores: {{"技术深度": 分数, "逻辑表达": 分数, "自信度": 分数, "沟通技巧": 分数, "岗位匹配度": 分数}}
-    
-    [岗位要求]: {jd_context}
-    [面试文本]: {text}
+            任务：
+            1. 诊断技术点与逻辑。
+            2. 给出“成长对比”：对比历史表现（若有），分析是否有进步。
+            3. ✨ 新增“简历 vs 表现”差异分析：对比[个人简历]，指出用户有哪些简历中的亮点在本次面试中被忽略了，或哪些表达与简历不符。
+            4. 结尾包含 JSON 评分 Scores: {{"技术深度": 分数, "逻辑表达":  分数, "自信度":  分数, "沟通技巧":  分数, "岗位匹配度":  分数}}
+            
+            [岗位要求]: {jd_context}
+            [个人简历]: {cv_context}
+            [面试文本]: {full_transcript}
     """
     
     try:
@@ -83,7 +80,22 @@ result = whisperx.align(result["segments"], model_a, metadata, audio, device)
 
 # --- 4. SaaS 逻辑：获取历史记录 ---
 print(f"--- 正在连接 Supabase 获取用户 {current_user_id} 的历史数据 ---")
-last_record = get_last_interview(current_user_id)
+
+try:
+    last_record = get_last_interview(current_user_id)
+    
+    # ✨ 新增判断逻辑
+    if last_record:
+        # 获取成功且有数据
+        print(f"✅ 历史记录获取成功！最后一次面试时间: {last_record.get('created_at', '未知')}")
+        print(f"📈 上次得分：{last_record.get('scores', {})}")
+    else:
+        # 连接正常但该用户数据库里是空的
+        print("ℹ️ 提示：未找到该用户的历史记录（新用户），将按首次面试进行分析。")
+except Exception as e:
+    # 彻底连接失败（如网络问题、Key 错误）
+    print(f"❌ 警告：连接 Supabase 失败，无法获取历史数据。错误信息: {e}")
+    last_record = None # 确保程序不会因为变量未定义而崩溃
 
 # --- 5. 指标计算与 AI 诊断 ---
 # A. 处理 JD
@@ -99,6 +111,11 @@ else:
     print("ℹ️ 未检测到 target_jd 文件，将使用通用面试标准。")
 print(f"🔍 调试：读取到的 JD 内容长度为 {len(jd_context)}，内容摘要：{jd_context[:50]}...")
 
+cv_files = ["target_cv.txt", "target_cv.png", "target_cv.jpg", "target_cv.pdf"]
+cv_path = next((f for f in cv_files if os.path.exists(f)), None)
+cv_context = process_jd_to_context(cv_path) if cv_path else "暂无简历信息"
+print(f"📄 简历解析状态: {'已加载' if cv_path else '未检测到简历'}")
+
 # B. 计算语速 WPM
 df_wpm = calculate_wpm(result["segments"])
 avg_wpm = float(df_wpm['wpm'].mean()) if not df_wpm.empty else 0
@@ -109,7 +126,7 @@ full_transcript = "".join([f"[{s['start']:.2f}s] {cc.convert(s['text'])}\n" for 
 # D. AI 对比分析
 # 获取该用户在 Supabase 的最后一次复盘数据
 last_record = get_last_interview(current_user_id)
-coach_feedback = ai_coach_analyze(full_transcript, jd_context, last_record)
+coach_feedback = ai_coach_analyze(full_transcript, jd_context, cv_context, last_record)
 
 # E. 解析评分
 scores = {}
@@ -143,16 +160,27 @@ with open(report_file, "w", encoding="utf-8") as f:
 print(f"\n--- ✅ 任务完成！报告已生成：{report_file} ---")
 
 # --- 8. ✨ 新增：交互式命令行 AI 导师 ---
+user_profile = get_user_profile(current_user_id)
+history_mems = get_history_fragments(current_user_id)
+print("\n--- 正在调取历史记忆片段 ---")
+history_mems = get_history_fragments(current_user_id)
+
+if "暂无" in history_mems:
+    print("⚠️ 提示：未检测到可回溯的对话片段。")
+else:
+    print(f"✅ 成功调取历史片段，共计约 {len(history_mems)} 字符。")
+
 chat_history = [
     {
         "role": "system", 
-        "content": f"""你是一个面试导师。请结合以下背景信息回答用户：
-        
-        【目标岗位要求 (JD)】：
-        {jd_context}
-        
-        【本次面试复盘报告】：
-        {coach_feedback}
+        "content": f"""你是一个拥有长期记忆的面试导师。
+        【历史面试原话片段】：{history_mems}
+        【用户长期得分画像】：{user_profile}
+        【目标岗位要求】：{jd_context}
+        【个人简历内容】：{cv_context}
+        【本次复盘报告】：{coach_feedback}
+
+        任务：结合以上所有背景。如果历史片段相关，请进行对比辅导。
         """
     }
 ]
