@@ -1,127 +1,291 @@
-# 🛡️ AI Interview Coach (SaaS 版 AI 面试复盘助手)
+# AI 面试分析与训练系统
 
-[![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Framework](https://img.shields.io/badge/Framework-Streamlit-red.svg)](https://streamlit.io/)
+[![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/Framework-FastAPI-teal.svg)](https://fastapi.tiangolo.com/)
+[![Next.js](https://img.shields.io/badge/Frontend-Next.js%2016-black.svg)](https://nextjs.org/)
 [![Database](https://img.shields.io/badge/Database-Supabase-blueviolet.svg)](https://supabase.com/)
 
-> **从录像到量化成长：基于 SaaS 架构的全栈 AI 面试复盘专家，助你攻克技术大厂。**
 
-本项目是一款集成了  **WhisperX 高精度转录** 、 **RAG岗位针对性诊断**  以及 **Supabase云端历史追踪** 的全自动化面试复盘工具。它不仅能诊断单次面试，更能通过长期记忆系统追踪你的成长曲线。
+## ⚠️ 项目状态声明
+> 面向求职场景的 AI 面试分析与训练系统。基于语音转录、结构化 Prompt 与多阶段分析机制，实现面试内容解析、技术诊断、追问训练与成长轨迹建模。
 
----
-
-## ✨ 核心特性
-
-* **⚡ 高精度语音对齐**：集成 `WhisperX`，实现字级别的精准时间戳标注与 ASR 转录。
-* **🎯 岗位针对性增强 (RAG)**：支持上传 **岗位 JD** 和 **个人简历** 。AI 将对比 **“简历内容 vs 现场表现”** ，指出面试中被忽略的亮点或表达不符之处。
-* **📈 长期成长轨迹 (Long-term Memory)**：
-* **数据持久化**：集成 **Supabase (PostgreSQL)**，面试记录云端同步。
-* **进化看板**：自动比对历次面试得分，生成语速平稳度、技术得分走势图。
-* **🤖 豆包 Pro 深度诊断**：基于火山引擎大模型，提供 5 维度量化评分：
-* **技术深度**：评估知识点覆盖的广度与深度。
-* **逻辑表达**：诊断回答是否有条理、是否简洁。
-* **📊 可视化仪表盘**：利用 **Plotly** 绘制能力画像雷达图，直观展现优劣势。
-* **🖥️ 极简 GUI 交互**：基于 `Streamlit` 构建，支持视频拖拽、报告一键导出。
-* **💬 智能面试导师 (AI Chat Mentor)**：支持针对面试表现进行实时追问，提供个性化的表达优化建议与模拟追问练习。
+> 当前 GitHub 仓库仅保留早期验证大模型编排链路的核心 MVP 代码供技术交流。 最新线上版本已演进为 Next.js + FastAPI 前后端分离架构。
+> 体验地址：[ai-fupan.cn](https://www.ai-fupan.cn)
 
 ---
 
-## 🛠️ 技术栈
+## 目录
 
-| 领域 | 技术实现 |
-| :--- | :--- |
-| **音频转录** | WhisperX (Tiny/Base/Small) |
-| **大模型引擎** | 豆包 Doubao-Pro (OpenAI SDK 兼容) |
-| **知识检索 (RAG)** |Sentence-Transformers |
-| **数据中心 (SaaS)** | Supabase (PostgreSQL) |
-| **数据可视化** | Plotly + Pandas |
-| **界面开发** | Streamlit + Custom CSS |
+- [核心功能](#核心功能)
+- [技术栈](#技术栈)
+- [项目结构](#项目结构)
+- [快速开始](#快速开始)
+- [API 端点一览](#api-端点一览)
+- [配置说明](#配置说明)
 
 ---
 
-## 🚀 快速开始
+## 核心功能
 
-### 1. 环境准备
-确保系统中已安装 **FFmpeg**，然后克隆并安装依赖：
+### 多阶段 AI 分析流程
+
+针对长文本面试转录场景，设计多阶段 AI 分析流程，对转录内容进行证据提取、技能归因与关键问题归因分析，并通过阶段拆分与结构化摘要降低长上下文分析中的信息干扰问题。
+
+分析流程包含：
+
+| 阶段 | 说明 |
+|------|------|
+| 文件上传 | 支持 MP3/WAV/M4A/FLAC 等音频格式，进行 MIME 魔数校验 |
+| ASR 转写 | 基于 DashScope Paraformer-v2 进行语音识别与说话人分离 |
+| 量化指标 | 统计语速 WPM、填充词密度、长停顿与沉默比等表达特征 |
+| LLM 分析 | 基于结构化 Prompt 与双消息架构生成分析结果 |
+| 深度诊断 | 执行证据提取、转录分段、能力画像与质量评估 |
+| 成长轨迹 | 对历史面试数据进行趋势分析与阶段性对比 |
+
+关键实现：
+- 将长文本分析拆分为多个阶段，减少单次 Prompt 的上下文压力
+- 对中间结果进行结构化摘要，避免后续阶段的信息污染
+- 使用独立分析阶段处理能力画像与问题归因，降低分析结果耦合
+
+### 语音表达能力分析
+
+基于 ASR 与说话人分离实现面试音频结构化处理，并结合语速、停顿与填充词等时序特征构建表达能力指标体系，用于定位连续追问场景下的表达波动区间。
+
+关键指标包括：
+- WPM（Words Per Minute）语速统计
+- 填充词频率与分钟级分布
+- 长停顿检测
+- 沉默时间占比
+
+关键实现：
+- 基于 ASR 分段结果统计时序特征
+- 对连续追问场景进行表达波动检测
+- 支持历史面试数据的指标趋势对比
+
+### Prompt 分层提示系统
+
+构建包含角色策略、Few-shot 示例与运行时上下文拼装的 Prompt 生成机制，提升复杂分析场景下输出结果的一致性与结构化程度。
+
+Prompt 主要包含：
+- 角色策略层
+- Few-shot 示例层
+- 运行时上下文层
+- 输出格式约束层
+
+关键实现：
+- 使用 YAML 配置管理 Prompt 模板
+- 动态拼装分析上下文与历史摘要
+- 通过输出约束降低复杂分析任务中的结果波动
+
+### AI 追问训练系统
+
+基于诊断结果动态生成追问问题，并结合阶段化训练流程，实现连续追问场景下的模拟训练与实时反馈。
+
+训练流程包含：
+- warmup：基础问题热身
+- pressure：连续追问压力测试
+- stabilization：表达恢复与稳定阶段
+
+关键实现：
+- 根据诊断结果动态生成追问方向
+- 基于训练阶段调整问题强度
+- 结合语速与填充词等指标生成实时反馈
+
+### 上下文感知对话系统
+
+融合历史面试数据、结构化分析结果与当前会话状态，实现复盘问答与跨轮次对比分析，并通过上下文精简降低长对话场景下的上下文冗余问题。
+
+关键实现：
+- 自动注入历史面试摘要与分析结果
+- 对长对话历史进行摘要压缩
+- 基于当前会话阶段动态裁剪上下文内容
+
+### 面试数据存储与成长分析
+
+构建面试数据持久化与历史表现对比机制，对语速、停顿与填充词等指标进行多次面试趋势分析，用于观察候选人的阶段性表达变化。
+
+关键实现：
+- 存储结构化面试分析结果
+- 支持历史面试数据聚合与趋势统计
+- 对表达能力指标进行阶段性变化分析
+
+---
+
+## 技术栈
+
+### 后端
+
+| 技术 | 用途 |
+|------|------|
+| FastAPI (Python 3.10+) | Web 框架 |
+| Supabase (PostgreSQL) | 数据库与认证 |
+| Redis | 缓存与限流 |
+| DeepSeek API | LLM 推理 |
+| DashScope | ASR 语音转文字 / OCR |
+
+### 前端
+
+| 技术 | 用途 |
+|------|------|
+| Next.js 16 (App Router) | 前端框架 |
+| TypeScript | 语言 |
+| Tailwind CSS | 样式 |
+
+---
+
+## 项目结构
+
+```
+interview_tool/
+├── backend/                        # FastAPI 后端（端口 8000）
+│   ├── requirements.txt
+│   └── app/
+│       ├── main.py                 # 入口、路由注册、健康检查
+│       ├── api/                    # 路由层 — 11 模块
+│       │   ├── auth.py             # 注册/登录/验证码/密码重置
+│       │   ├── interview.py        # 面试记录 CRUD
+│       │   ├── billing.py          # 余额/兑换/流水
+│       │   ├── upload.py           # 文件上传/文字提取
+│       │   ├── ai.py               # AI 对话
+│       │   ├── chat.py             # 聊天线程/消息管理
+│       │   ├── admin.py            # 管理后台
+│       │   ├── creator.py          # 创作者中心
+│       │   ├── invite.py           # 邀请码
+│       │   ├── analyze.py          # 分析流水线
+│       │   └── training.py         # 追问训练
+│       ├── services/               # 业务逻辑层 — 24 模块
+│       │   ├── supabase_service.py
+│       │   ├── auth_service.py
+│       │   ├── billing_service.py
+│       │   ├── interview_service.py
+│       │   ├── chat_service.py
+│       │   ├── ai_service.py
+│       │   ├── email_service.py
+│       │   ├── upload_service.py
+│       │   ├── admin_service.py
+│       │   ├── invite_service.py
+│       │   ├── rag_service.py
+│       │   ├── training_service.py
+│       │   ├── diagnosis_service.py
+│       │   ├── evidence_service.py
+│       │   ├── chunking_service.py
+│       │   ├── quality_service.py
+│       │   ├── prompt_engine.py
+│       │   ├── output_sanitizer.py
+│       │   ├── task_manager.py
+│       │   └── ... 
+│       ├── schemas/                # Pydantic 模型
+│       ├── core/                   # 基础设施
+│       │   ├── config.py
+│       │   ├── security.py
+│       │   ├── dependencies.py
+│       │   └── rate_limit.py
+│       └── prompts/                # 提示词模板
+│
+├── frontend/                      # Next.js 前端（端口 3000）
+│   ├── package.json
+│   └── src/
+│       ├── lib/api.ts              # API 客户端
+│       ├── context/                # React Context 状态管理
+│       ├── components/             # 通用组件
+│       └── app/                    # 页面（App Router）
+│           ├── dashboard/          # 面试分析（核心页面）
+│           ├── history/            # 面试历史
+│           ├── chat/               # AI 对话
+│           ├── exercise/           # 追问训练
+│           ├── growth/             # 成长轨迹
+│           ├── recharge/           # 充值中心
+│           ├── profile/            # 个人中心
+│           └── ...
+│
+├── docs/                          # 文档
+└── init.sql
+```
+
+---
+
+## 快速开始
+
+### 环境准备
+
+需要 Python 3.10+、Node.js 18+ 以及 FFmpeg。
 
 ```bash
-# 克隆仓库
-git clone https://github.com/wyttao120/AI-Interview-Coach.git
-cd AI-Interview-Coach
-
-# 安装核心依赖
+# 后端依赖
+cd backend
 pip install -r requirements.txt
 
-登录 Supabase 后，打开 SQL Editor，将本项目根目录下的 init.sql 内容粘贴并运行。
+# 前端依赖
+cd frontend
+npm install
 ```
 
+### 配置环境变量
 
-### 2. 配置 API 密钥
-在项目根目录创建 .env 文件，填入你的云端凭证：
+在项目根目录创建 `.env` 文件：
 
-```Bash
-# 火山引擎 (豆包 AI)
-VOLC_API_KEY=你的 API 密钥
-DOUBAO_ENDPOINT_ID=你的接入点 ID
+```bash
+# Supabase
+SUPABASE_URL=你的项目URL
+SUPABASE_KEY=你的anon key
+SUPABASE_SERVICE_ROLE_KEY=你的service_role key
 
-# Supabase (云端数据库)
-SUPABASE_URL=你的项目 URL
-SUPABASE_KEY=你的匿名密钥 (Anon Key)
+# DeepSeek
+DEEPSEEK_API_KEY=你的API密钥
+DEEPSEEK_MODEL=deepseek-v4-flash
+
+# DashScope（语音转文字）
+DASHSCOPE_API_KEY=你的API密钥
+
+# 邮箱（验证码发送）
+EMAIL_SENDER=your_email@163.com
+EMAIL_AUTH_CODE=你的邮箱授权码
 ```
 
-### 3. 运行程序
-```Bash
-# 启动网页版 (推荐：含可视化看板)
-streamlit run app.py
+### 启动服务
 
-# 启动命令行版 (快速调试)
-python run_interview.py
+```bash
+# 后端
+cd backend
+uvicorn app.main:app --reload --port 8000
+
+# 前端
+cd frontend
+npm run dev
 ```
+
+访问 http://localhost:3000 即可使用。
 
 ---
 
+## API 端点一览
 
-## 📺 视觉预览 (Visual Showcase)
+| 模块 | 前缀 | 主要功能 |
+|------|------|---------|
+| auth | `/auth` | 注册/登录/验证码/密码重置 |
+| interview | `/interviews` | 面试记录查询 |
+| billing | `/billing` | 余额/兑换/流水 |
+| upload | `/upload` | 文件上传/文字提取 |
+| ai | `/ai` | AI 对话 |
+| chat | `/chat` | 聊天线程/消息管理 |
+| admin | `/admin` | 管理后台 |
+| creator | `/creator` | 创作者中心 |
+| invite | `/invite` | 邀请码与绑定 |
+| analyze | `/analyze` | 分析任务提交/进度/取消 |
+| training | `/training` | 追问训练 |
 
-### 1. 极简交互入口
-> 侧边栏支持火山引擎 API 配置、模型大小选择，并新增了 JD 与简历的同步上传入口，实现 RAG 深度诊断。
-<p align="center">
-  <img src="assets/app_home.png" width="900" alt="应用首页">
-</p>
+---
 
-### 2. 智能化分析流程 (Agent Workflow)
-> 自动化执行 JD/简历解析、历史档案调取、音频转录及 AI 报告生成，每一步均有实时状态反馈。
-<p align="center">
-  <img src="assets/analysis_workflow.png" width="800" alt="处理流程">
-</p>
+## 配置说明
 
-### 3. 多维度结果产出 (Analysis & Insights)
-| 📊 量化表现看板 | 🤖 AI 教练深度报告 |
-| :---: | :---: |
-| <img src="assets/metrics_dashboard.png" width="450"> | <img src="assets/ai_report.png" width="450"> |
-| **实时指标**：语速波动曲线与能力雷达图 | **深度洞察**：包含技术点与逻辑诊断、成长对比、以及核心的“简历 vs 表现”差异分析，并产出 5 维度量化评分。 |
-
-### 4. 智能面试导师 (Interactive AI Mentor)
-> **深度对谈与针对性指导**：基于当前复盘报告与历史数据，AI 导师会指出面试发挥偏离等问题，并提供具体的改进方向。
-<p align="center">
-  <img src="assets/ai_mentor_chat.png" width="900" alt="AI 导师对话">
-</p>
-
-### 5. 进化史追踪
-> 自动分析跨会话的技术得分走势与语速平稳度，可视化展示用户的面试进化过程。
-<p align="center">
-  <img src="assets/growth_history.png" width="900" alt="成长轨迹">
-</p>
-
-
-## 🛡️ 安全与隐私
-* **密钥安全**：项目通过 .gitignore 严格过滤 .env 文件。
-
-* **数据持久化**：采用 Supabase 设计，确保面试数据的私密性与持久性。
-
-## 🤝 贡献与支持
-欢迎提交 Issue 或 Pull Request。如果你觉得这个工具有用，请给个 Star ⭐！
-
-## 📄 开源协议
-本项目采用 MIT License 许可。
+| 环境变量 | 默认值 | 说明 |
+|----------|--------|------|
+| SUPABASE_URL | — | Supabase 项目 URL |
+| SUPABASE_KEY | — | anon public key |
+| SUPABASE_SERVICE_ROLE_KEY | — | service_role 密钥 |
+| DEEPSEEK_API_KEY | — | DeepSeek API Key |
+| DEEPSEEK_MODEL | deepseek-v4-flash | LLM 模型 |
+| DASHSCOPE_API_KEY | — | DashScope API Key |
+| EMAIL_SENDER | — | 发件邮箱 |
+| EMAIL_AUTH_CODE | — | 邮箱授权码 |
+| REDIS_URL | redis://localhost:6379/0 | Redis 连接地址 |
