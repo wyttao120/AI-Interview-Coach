@@ -5,8 +5,6 @@
 [![Next.js](https://img.shields.io/badge/Frontend-Next.js%2016-black.svg)](https://nextjs.org/)
 [![Database](https://img.shields.io/badge/Database-Supabase-blueviolet.svg)](https://supabase.com/)
 
-
-## ⚠️ 项目状态声明
 > 面向求职场景的 AI 面试分析与训练系统。基于语音转录、结构化 Prompt 与多阶段分析机制，实现面试内容解析、技术诊断、追问训练与成长轨迹建模。
 
 > 当前 GitHub 仓库仅保留早期验证大模型编排链路的核心 MVP 代码供技术交流。 最新线上版本已演进为 Next.js + FastAPI 前后端分离架构。
@@ -132,75 +130,6 @@ Prompt 主要包含：
 | Tailwind CSS | 样式 |
 
 ---
-
-## 项目结构
-
-```
-interview_tool/
-├── backend/                        # FastAPI 后端（端口 8000）
-│   ├── requirements.txt
-│   └── app/
-│       ├── main.py                 # 入口、路由注册、健康检查
-│       ├── api/                    # 路由层 — 11 模块
-│       │   ├── auth.py             # 注册/登录/验证码/密码重置
-│       │   ├── interview.py        # 面试记录 CRUD
-│       │   ├── billing.py          # 余额/兑换/流水
-│       │   ├── upload.py           # 文件上传/文字提取
-│       │   ├── ai.py               # AI 对话
-│       │   ├── chat.py             # 聊天线程/消息管理
-│       │   ├── admin.py            # 管理后台
-│       │   ├── creator.py          # 创作者中心
-│       │   ├── invite.py           # 邀请码
-│       │   ├── analyze.py          # 分析流水线
-│       │   └── training.py         # 追问训练
-│       ├── services/               # 业务逻辑层 — 24 模块
-│       │   ├── supabase_service.py
-│       │   ├── auth_service.py
-│       │   ├── billing_service.py
-│       │   ├── interview_service.py
-│       │   ├── chat_service.py
-│       │   ├── ai_service.py
-│       │   ├── email_service.py
-│       │   ├── upload_service.py
-│       │   ├── admin_service.py
-│       │   ├── invite_service.py
-│       │   ├── rag_service.py
-│       │   ├── training_service.py
-│       │   ├── diagnosis_service.py
-│       │   ├── evidence_service.py
-│       │   ├── chunking_service.py
-│       │   ├── quality_service.py
-│       │   ├── prompt_engine.py
-│       │   ├── output_sanitizer.py
-│       │   ├── task_manager.py
-│       │   └── ... 
-│       ├── schemas/                # Pydantic 模型
-│       ├── core/                   # 基础设施
-│       │   ├── config.py
-│       │   ├── security.py
-│       │   ├── dependencies.py
-│       │   └── rate_limit.py
-│       └── prompts/                # 提示词模板
-│
-├── frontend/                      # Next.js 前端（端口 3000）
-│   ├── package.json
-│   └── src/
-│       ├── lib/api.ts              # API 客户端
-│       ├── context/                # React Context 状态管理
-│       ├── components/             # 通用组件
-│       └── app/                    # 页面（App Router）
-│           ├── dashboard/          # 面试分析（核心页面）
-│           ├── history/            # 面试历史
-│           ├── chat/               # AI 对话
-│           ├── exercise/           # 追问训练
-│           ├── growth/             # 成长轨迹
-│           ├── recharge/           # 充值中心
-│           ├── profile/            # 个人中心
-│           └── ...
-│
-├── docs/                          # 文档
-└── init.sql
-```
 
 ---
 
